@@ -1,0 +1,42 @@
+####################
+# Load in tables
+####################
+setwd("C:/Users/emmab/Documents/Article50/")
+library(XML)
+URL <- "http://www.politicsresources.net/area/uk/mps.htm"
+tables <- readHTMLTable(URL)
+mps <- tables[[3]]
+mps <- mps[,2:5]
+write.table(mps,"mps.txt",sep="\t",col.names=F,row.names=F,quote=F)
+mps2 <- read.table("mps.txt",sep="\t",stringsAsFactors=F,head=F,comment="",quote=NULL)
+votedFor <- read.table("for",sep="\t",fill=F,stringsAsFactors=F,comment="",quote="")
+votedAgainst <- read.table("against",sep="\t",head=F,fill=F,stringsAsFactors=F,comment="",quote="")
+refByConstituency <- read.table("referendumByConstituency.txt",sep="\t",fill=F,stringsAsFactors=F)
+colnames(votedFor) <- c("Name","Party","Constituency")
+colnames(votedAgainst) <- c("Name","Constituency","Party")
+colnames(mps) <- c("Constituency","Name","Party","Size")
+correctNames <- c("votedFor","votedAgainst","mps")
+nope <- c("Mr ","Sir ","Dame ","Ms ","Miss ","Mrs ","Dr ","Lady ")
+for(i in 1:3){
+toCorrect <- get(correctNames[i])
+toCorrect$Name <- gsub(paste0(nope,collapse="|"),"",toCorrect$Name)
+assign(correctNames[i],toCorrect)
+}
+mps[grep("Dr",as.character(mps[,2])),2][c(1,3,7,8)] <- c("Alasdair McDonnell","Caroline Lucas","Liam Fox","Sarah Wollaston")
+####################
+# Descriptive stats
+####################
+#
+## How many MPs abstained?
+#
+# There are 650 MPs
+#
+abstained <- 650-nrow(votedFor)-nrow(votedAgainst)
+#abstained
+#[1] 38
+#
+# Which MPs abstained?
+#
+voted <- c(votedFor[,1],votedAgainst[,1])
+length(which(mps[,2] %in% voted)) # 603 - missing 46
+missing <- mps[which(!as.character(mps[,2]) %in% as.character(voted)),2]
