@@ -1,3 +1,6 @@
+# The first and only argument to this script must be the path to your image file
+# Crop the image to just the OTPs
+
 library(tesseract)
 library(magick)
 args = commandArgs(trailingOnly=TRUE)
